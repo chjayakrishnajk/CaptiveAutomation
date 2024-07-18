@@ -26,6 +26,7 @@ namespace CaptiveAutomation{
             .WriteTo.File($"logs/log_{DateTime.Now:yyyyMMdd_HHmmss}.txt", rollingInterval: RollingInterval.Infinite ,retainedFileCountLimit: null)
           .CreateLogger();
 		await Starbucks(args[0]);
+        Log.Information("Internet: "+ !(await IsCaptivePortalAsync()));
 		}
         static async Task Starbucks(string mode)
         {
@@ -52,48 +53,43 @@ namespace CaptiveAutomation{
                 {
                     driver.Navigate().GoToUrl("https://google.com/");
                     Thread.Sleep(5000);
-                    if(driver.Url != "https://www.google.com")
+                    if(driver.Url != "https://www.google.com" || driver.Url != "https://www.google.com/");
                     {
                         Log.Information($"Redirected to {driver.Url}");
                         File.WriteAllText($"html/redirect_{driver.Url.Replace("/","")}{DateTime.Now.ToString("HHmmss")}.html", driver.PageSource);
                     }
                 }
                 int i = 0;
-                if(!driver.PageSource.Contains("error occurred"))
+                if(driver.PageSource.Contains("error occurred"))
                 {
-                    File.WriteAllText($"html/error{DateTime.Now.ToString("HHmmss")}.html", driver.PageSource);
-                    Log.Information("PAGE CONTAINS NO ERROR");
+                    Log.Information("Page Contains error before clicking english button");
                 }
-                else
-                {
-                    try{
-                        var english = driver.FindElement(By.XPath("//a[contains(translate(text(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'english')]"));
-                        if(english != null)
-                        {
-                            try{
-                                Log.Information("Clicking English Button");
-                                Log.Information("English button html: " + english.GetAttribute("outerHTML"));
-                                Thread.Sleep(1000);
-                                english.Click();
-                            }
-                            catch(Exception ex)
-                            {
-                                Log.Information("Clicking via js");
-                                IJavaScriptExecutor jsEx = (IJavaScriptExecutor)driver;
-                                jsEx.ExecuteScript("arguments[0].click();", english);
-                            }
-                                Thread.Sleep(3000);
-                        }
-                        else
-                        {
-                            Log.Information("Found no english button");
-                        }
-                        Log.Information("Page Contains error before clicking english button");
-                    }
-                    catch(Exception ex)
+                try{
+                    var english = driver.FindElement(By.XPath("//a[contains(translate(text(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'english')]"));
+                    if(english != null)
                     {
-                        
+                        try{
+                            Log.Information("Clicking English Button");
+                            Log.Information("English button html: " + english.GetAttribute("outerHTML"));
+                            Thread.Sleep(1000);
+                            english.Click();
+                        }
+                        catch(Exception ex)
+                        {
+                            Log.Information("Clicking via js");
+                            IJavaScriptExecutor jsEx = (IJavaScriptExecutor)driver;
+                            jsEx.ExecuteScript("arguments[0].click();", english);
+                        }
+                            Thread.Sleep(3000);
                     }
+                    else
+                    {
+                        Log.Information("Found no english button");
+                    }
+                }
+                catch(Exception ex)
+                {
+                    
                 }
                 if(!driver.PageSource.Contains("error occurred"))
                 {
@@ -306,6 +302,7 @@ namespace CaptiveAutomation{
                 texts.Add(element.Text?.ToLower() ?? "");
                 texts.Add(element.GetAttribute("value")?.ToLower() ?? "");
                 texts.Add(element.GetAttribute("name")?.ToLower() ?? "");
+                texts.Add(element.GetAttribute("href")?.ToLower() ?? "");
                 Log.Information("Element: " + element.GetAttribute("outerHTML"));
                 foreach(string text in texts)
                 {
