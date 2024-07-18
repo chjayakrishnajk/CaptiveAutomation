@@ -52,14 +52,13 @@ namespace CaptiveAutomation{
                 {
                     driver.Navigate().GoToUrl("https://google.com/");
                     Thread.Sleep(5000);
-                    if(driver.Url != "https://google.com")
+                    if(driver.Url != "https://www.google.com")
                     {
                         Log.Information($"Redirected to {driver.Url}");
                         File.WriteAllText($"html/redirect_{driver.Url.Replace("/","")}{DateTime.Now.ToString("HHmmss")}.html", driver.PageSource);
                     }
                 }
                 int i = 0;
-                var english = driver.FindElement(By.XPath("//a[contains(translate(text(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'english')]"));
                 if(!driver.PageSource.Contains("error occurred"))
                 {
                     File.WriteAllText($"html/error{DateTime.Now.ToString("HHmmss")}.html", driver.PageSource);
@@ -67,27 +66,34 @@ namespace CaptiveAutomation{
                 }
                 else
                 {
-                    if(english != null)
-                    {
-                        try{
-                            Log.Information("Clicking English Button");
-                            Log.Information("English button html: " + english.GetAttribute("outerHTML"));
-                            Thread.Sleep(1000);
-                            english.Click();
-                        }
-                        catch(Exception ex)
+                    try{
+                        var english = driver.FindElement(By.XPath("//a[contains(translate(text(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'english')]"));
+                        if(english != null)
                         {
-                            Log.Information("Clicking via js");
-                            IJavaScriptExecutor jsEx = (IJavaScriptExecutor)driver;
-                            jsEx.ExecuteScript("arguments[0].click();", english);
+                            try{
+                                Log.Information("Clicking English Button");
+                                Log.Information("English button html: " + english.GetAttribute("outerHTML"));
+                                Thread.Sleep(1000);
+                                english.Click();
+                            }
+                            catch(Exception ex)
+                            {
+                                Log.Information("Clicking via js");
+                                IJavaScriptExecutor jsEx = (IJavaScriptExecutor)driver;
+                                jsEx.ExecuteScript("arguments[0].click();", english);
+                            }
+                                Thread.Sleep(3000);
                         }
-                            Thread.Sleep(3000);
+                        else
+                        {
+                            Log.Information("Found no english button");
+                        }
+                        Log.Information("Page Contains error before clicking english button");
                     }
-                    else
+                    catch(Exception ex)
                     {
-                        Log.Information("Found no english button");
+                        
                     }
-                    Log.Information("Page Contains error before clicking english button");
                 }
                 if(!driver.PageSource.Contains("error occurred"))
                 {
