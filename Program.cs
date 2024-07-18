@@ -46,12 +46,18 @@ namespace CaptiveAutomation{
                 if(mode=="0")
                 {
                     driver.Navigate().GoToUrl(captiveUrl); 
+                    Thread.Sleep(2000);
                 }
                 else
                 {
                     driver.Navigate().GoToUrl("https://google.com/");
+                    Thread.Sleep(5000);
+                    if(driver.Url != "https://google.com")
+                    {
+                        Log.Information($"Redirected to {driver.Url}");
+                        File.WriteAllText($"html/redirect_{driver.Url.Replace("/","")}{DateTime.Now.ToString("HHmmss")}.html", driver.PageSource);
+                    }
                 }
-                Thread.Sleep(2000);
                 int i = 0;
                 var english = driver.FindElement(By.XPath("//a[contains(translate(text(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'english')]"));
                 if(!driver.PageSource.Contains("error occurred"))
