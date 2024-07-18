@@ -25,9 +25,9 @@ namespace CaptiveAutomation{
             .WriteTo.Console()
             .WriteTo.File($"logs/log_{DateTime.Now:yyyyMMdd_HHmmss}.txt", rollingInterval: RollingInterval.Infinite ,retainedFileCountLimit: null)
           .CreateLogger();
-		await Starbucks();
+		await Starbucks(args[0]);
 		}
-        static async Task Starbucks()
+        static async Task Starbucks(string mode)
         {
             var captiveUrl = await GetCaptivePortalUrlAsync();
             if(captiveUrl == null)
@@ -43,7 +43,14 @@ namespace CaptiveAutomation{
             using( var driver = new ChromeDriver(options))
             {
                 Log.Information("ChromeDriver Loaded");
-                driver.Navigate().GoToUrl(captiveUrl); 
+                if(mode=="0")
+                {
+                    driver.Navigate().GoToUrl(captiveUrl); 
+                }
+                else
+                {
+                    driver.Navigate().GoToUrl("https://google.com/");
+                }
                 Thread.Sleep(2000);
                 int i = 0;
                 var english = driver.FindElement(By.XPath("//a[contains(translate(text(), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz'), 'english')]"));
